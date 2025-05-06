@@ -10,14 +10,9 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@babel/core": "^7.27.1",
-    "@babel/plugin-proposal-decorators": "^7.27.1",
-    "@babel/preset-env": "^7.27.1",
-    "@babel/preset-typescript": "^7.27.1",
     "@vitejs/plugin-vue": "^5.2.3",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite": "^6.3.5"
   }
 }

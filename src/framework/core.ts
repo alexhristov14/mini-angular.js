@@ -1,8 +1,14 @@
 import { ChangeDetectionStrategy, ViewEncapsulation } from "./interfaces";
+import { ComponentRegistry } from "./component";
 
 export function bootstrap(ComponentClass: any) {
   const host = document.querySelector(ComponentClass.selector)!;
   let component = new ComponentClass();
+
+  // Register the imports
+  for (const Imported of ComponentClass.imports || []) {
+    ComponentRegistry.set(Imported.selector, Imported);
+  }
 
   applyStyles(
     ComponentClass.styles,
@@ -26,17 +32,18 @@ export function bootstrap(ComponentClass: any) {
   (window as any).__component__ = component;
 
   function render() {
-    const rendered = ComponentClass.template.replace(
-      /\{\{(.*?)\}\}/g,
-      (_: any, expr: any) => {
-        try {
-          const val = eval(`component.${expr.trim()}`);
-          return val != null ? val : "";
-        } catch {
-          return "";
-        }
+    let rendered = ComponentClass.template;
+
+    rendered = renderAllChildComponents(rendered);
+
+    rendered = rendered.replace(/\{\{(.*?)\}\}/g, (_: any, expr: any) => {
+      try {
+        const val = eval(`component.${expr.trim()}`);
+        return val != null ? val : "";
+      } catch {
+        return "";
       }
-    );
+    });
 
     host.innerHTML = rendered;
 
@@ -67,10 +74,8 @@ function applyStyles(
 
     let styleContent = styles;
 
-    console.log(encapsulation);
-
     if (encapsulation === ViewEncapsulation.Emulated) {
-      console.log("called");
+      // regex gets the css selectors, all characters until '{'
       const scopedCSS = styles.replace(/([^{]+){/g, (match, selectorPart) => {
         const scoped = selectorPart
           .split(",")
@@ -98,4 +103,32 @@ function applyStyles(
 
 function getScopeAttr(selector: string): string {
   return `_mini-ng-content-${selector.replace(/[^a-z0-9]/gi, "")}`;
+}
+
+function renderAllChildComponents(rendered: string): string {
+  // We loop through all the child components and render/evaluate them.
+  for (const [selector, ChildClass] of ComponentRegistry.entries()) {
+    const childTag = `<${selector}></${selector}>`;
+
+    if (rendered.includes(childTag)) {
+      const childInstance = new ChildClass();
+
+      if (typeof childInstance.onInit === "function") childInstance.onInit();
+
+      let childHtml = ChildClass.template || "";
+
+      childHtml = childHtml.replace(/\{\{(.*?)\}\}/g, (_: any, expr: any) => {
+        try {
+          const val = eval(`childInstance.${expr.trim()}`);
+          return val != null ? val : "";
+        } catch {
+          return "";
+        }
+      });
+
+      rendered = rendered.replaceAll(childTag, childHtml);
+    }
+  }
+
+  return rendered;
 }
