@@ -109,6 +109,13 @@ function renderAllChildComponents(
   parentInstance: any
 ): string {
   for (const [selector, ChildClass] of ComponentRegistry.entries()) {
+    applyStyles(
+      ChildClass.styles,
+      ChildClass.stylesUrl,
+      ChildClass.selector,
+      ChildClass.encapsulation
+    );
+
     const matches = Array.from(
       rendered.matchAll(new RegExp(`<${selector}([^>]*)></${selector}>`, "g"))
     );
@@ -119,21 +126,7 @@ function renderAllChildComponents(
       const childInstance = new ChildClass();
       const inputs = ChildClass.__inputs || [];
 
-      // Bind input properties
-      inputs.forEach((inputKey: string) => {
-        const regex = new RegExp(`\\[${inputKey}\\]="(.*?)"`);
-        const inputMatch = attrString.match(regex);
-
-        if (inputMatch) {
-          try {
-            const value =
-              eval(`parentInstance.${inputMatch[1]}`) ?? inputMatch[1];
-            childInstance[inputKey] = value;
-          } catch {
-            childInstance[inputKey] = inputMatch[1];
-          }
-        }
-      });
+      evaluateInputData(inputs, attrString, childInstance);
 
       // Render child template
       let childHtml = ChildClass.template;
@@ -151,4 +144,25 @@ function renderAllChildComponents(
   }
 
   return rendered;
+}
+
+function evaluateInputData(
+  inputs: string[],
+  attrString: string,
+  childInstance: any
+) {
+  // Bind input properties
+  inputs.forEach((inputKey: string) => {
+    const regex = new RegExp(`\\[${inputKey}\\]="(.*?)"`);
+    const inputMatch = attrString.match(regex);
+
+    if (inputMatch) {
+      try {
+        const value = eval(`parentInstance.${inputMatch[1]}`) ?? inputMatch[1];
+        childInstance[inputKey] = value;
+      } catch {
+        childInstance[inputKey] = inputMatch[1];
+      }
+    }
+  });
 }

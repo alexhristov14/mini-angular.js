@@ -3,10 +3,15 @@ import { Component, Input } from "@mini-angular/core";
 @Component({
   selector: "child-selector",
   template: `
-    <h1>
+    <h2>
       Hello, I'm a Child Component, with input {{ name }} and another input
       {{ second }}
-    </h1>
+    </h2>
+  `,
+  styles: `
+    h2 {
+        color: green;
+    }
   `,
 })
 export class ChildComponent {
