@@ -40,6 +40,7 @@ export function bootstrap(ComponentClass: any) {
     let rendered = ComponentClass.template;
 
     rendered = renderAllChildComponents(rendered, component);
+    rendered = processStructuralDirectives(rendered, component);
 
     rendered = rendered.replace(/\{\{(.*?)\}\}/g, (_: any, expr: any) => {
       try {
@@ -165,4 +166,37 @@ function evaluateInputData(
       }
     }
   });
+}
+
+function processStructuralDirectives(rendered: string, context: any): string {
+  rendered = processNgIf(rendered, context);
+  rendered = processNgFor(rendered, context);
+
+  return rendered;
+}
+
+function processNgIf(rendered: string, context: any): string {
+  const ngIfRegex = /<([\w-]+)[^>]*mini-ng-if="([^"]+)"[^>]*>(.*?)<\/\1>/gs;
+  const matches = rendered.matchAll(ngIfRegex);
+
+  for (const match of matches) {
+    const fullTag = match[0];
+    const tagName = match[1];
+    const condition = match[2].trim();
+    const content = match[3];
+
+    const conditionValue = eval(condition);
+    if (conditionValue) {
+      // rendered = rendered.replace(fullTag, content);
+      const updatedTag = fullTag.replace(/mini-ng-if="[^"]*"/, "").trim();
+      rendered = rendered.replace(fullTag, updatedTag);
+    } else {
+      rendered = rendered.replace(fullTag, "");
+    }
+  }
+  return rendered;
+}
+
+function processNgFor(rendered: string, context: any): string {
+  return rendered;
 }

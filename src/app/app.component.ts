@@ -7,10 +7,17 @@ import {
 @Component({
   selector: "#app",
   template: `
-    <h1>{{ title }}</h1>
-    <button id="clickBtn">Click me</button>
-    <p>{{ count }}</p>
-    <child-selector [name]="test1" [second]="test2"></child-selector>
+    <div>
+      <h1 mini-ng-if="1 == 1">{{ title }}</h1>
+      <h1 mini-ng-if="false">{{ title }}</h1>
+      <button id="clickBtn">Click me</button>
+      <p>{{ count }}</p>
+      <child-selector
+        mini-ng-if="false"
+        [name]="test1"
+        [second]="test2"
+      ></child-selector>
+    </div>
   `,
   styles: `
   h1 {
