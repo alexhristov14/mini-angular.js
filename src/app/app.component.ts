@@ -1,4 +1,4 @@
-import { Component } from "../framework/component";
+import { Component } from "@mini-angular/component";
 
 @Component({
   selector: "#app",
@@ -12,13 +12,10 @@ export class AppComponent {
   title = "Hello from Mini Angular with @Component!";
   count = 0;
 
-  detectChanges!: () => void;
-
   onInit(): void {
     document.getElementById("clickBtn")?.addEventListener("click", () => {
       this.title = "New Title";
       this.count++;
-      this.detectChanges();
     });
   }
 }

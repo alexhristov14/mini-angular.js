@@ -1,26 +1,37 @@
 export function bootstrap(ComponentClass: any) {
-  const host = document.querySelector(ComponentClass.selector);
-  const component = new ComponentClass();
+  const host = document.querySelector(ComponentClass.selector)!;
+  let component = new ComponentClass();
 
-  component.__host = host;
-  component.__template = ComponentClass.template;
+  component = new Proxy(component, {
+    set(target, key, value) {
+      const changed = target[key] !== value;
+      target[key] = value;
+      if (changed) render();
+      return true;
+    },
+  });
 
-  // Change Detection -> we check if rendered data has been changed
-  component.detectChanges = function () {
-    const renderedTemplate = this.__template.replace(
-      /\{\{(.*?)\}\}/g, // Looking for {{ DATA }}
+  (window as any).__component__ = component;
+
+  function render() {
+    const rendered = ComponentClass.template.replace(
+      /\{\{(.*?)\}\}/g,
       (_: any, expr: any) => {
-        const value = eval(`this.${expr.trim()}`);
-        return value != null ? value : "";
+        try {
+          const val = eval(`component.${expr.trim()}`);
+          return val != null ? val : "";
+        } catch {
+          return "";
+        }
       }
     );
-    this.__host.innerHTML = renderedTemplate;
-    if (typeof this.onInit === "function") {
-      this.onInit();
+
+    host.innerHTML = rendered;
+
+    if (typeof component.onInit === "function") {
+      component.onInit();
     }
-  };
+  }
 
-  component.detectChanges();
-
-  return component;
+  render();
 }
