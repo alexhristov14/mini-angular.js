@@ -1,4 +1,4 @@
-import { Component } from "@mini-angular/component";
+import { Component } from "@mini-angular/core";
 import { ChildComponent } from "./child.component";
 import {
   ChangeDetectionStrategy,
@@ -10,7 +10,7 @@ import {
     <h1>{{ title }}</h1>
     <button id="clickBtn">Click me</button>
     <p>{{ count }}</p>
-    <child-selector></child-selector>
+    <child-selector [name]="test1" [second]="test2"></child-selector>
   `,
   styles: `
   h1 {
@@ -24,6 +24,8 @@ import {
 export class AppComponent {
   title = "Hello from Mini Angular with @Component!";
   count = 0;
+  test1 = "test1";
+  test2 = "test2";
   detectChanges!: () => void;
 
   onInit(): void {
